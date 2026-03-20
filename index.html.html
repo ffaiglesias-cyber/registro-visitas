@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ronda Cultural · Registro de Visita</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --verde: #1a6b4a;
+    --verde-claro: #e8f5ee;
+    --crema: #faf8f3;
+    --texto: #1c1c1a;
+    --texto-suave: #7a7a72;
+    --borde: #e0ddd5;
+    --blanco: #ffffff;
+    --rojo: #c0392b;
+    --rojo-claro: #fdf0ee;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--crema); font-family: 'DM Sans', sans-serif; color: var(--texto); overscroll-behavior: none; }
+  .app { min-height: 100dvh; display: flex; flex-direction: column; max-width: 420px; margin: 0 auto; }
+  header { padding: 2rem 1.75rem 1.25rem; border-bottom: 1px solid var(--borde); background: var(--blanco); }
+  .org { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--texto-suave); margin-bottom: 4px; }
+  header h1 { font-family: 'DM Serif Display', serif; font-size: 22px; font-weight: 400; line-height: 1.2; }
+  .fecha-badge { display: inline-block; margin-top: 10px; background: var(--verde-claro); color: var(--verde); font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 20px; }
+  .body { flex: 1; display: flex; flex-direction: column; padding: 1.5rem 1.75rem; gap: 1.25rem; }
+  .display-wrap { background: var(--blanco); border: 1px solid var(--borde); border-radius: 16px; padding: 1.5rem 1.5rem 1.25rem; text-align: center; }
+  .display-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--texto-suave); margin-bottom: 0.5rem; }
+  .display-number { font-family: 'DM Serif Display', serif; font-size: 80px; color: var(--texto); line-height: 1; min-height: 88px; display: flex; align-items: center; justify-content: center; transition: transform 0.08s ease; }
+  .display-number.pulse { transform: scale(1.04); }
+  .display-number.empty { color: #d0cec8; }
+  .display-sub { font-size: 12px; color: var(--texto-suave); margin-top: 6px; }
+  .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .key { background: var(--blanco); border: 1px solid var(--borde); border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 24px; font-weight: 400; color: var(--texto); padding: 16px 8px; cursor: pointer; transition: background 0.1s, transform 0.08s; user-select: none; -webkit-user-select: none; }
+  .key:active { background: var(--verde-claro); border-color: #b8ddc9; transform: scale(0.95); }
+  .key.del { font-size: 18px; color: var(--texto-suave); }
+  .key.empty { background: transparent; border: none; pointer-events: none; }
+  .btn-enviar { width: 100%; padding: 17px; background: var(--verde); border: none; border-radius: 14px; color: var(--blanco); font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 500; cursor: pointer; transition: background 0.15s, transform 0.08s; }
+  .btn-enviar:not(:disabled):active { background: #124d35; transform: scale(0.98); }
+  .btn-enviar:disabled { background: #d0cec8; color: #a09e98; cursor: default; }
+  .btn-enviar .spinner { display: none; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto; }
+  .btn-enviar.loading .btn-text { display: none; }
+  .btn-enviar.loading .spinner { display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #success-view { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 100dvh; padding: 2.5rem 2rem; text-align: center; background: var(--crema); max-width: 420px; margin: 0 auto; }
+  #success-view.visible { display: flex; }
+  .check-circle { width: 72px; height: 72px; border-radius: 50%; background: var(--verde-claro); display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes pop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .check-circle svg { width: 36px; height: 36px; }
+  #success-view h2 { font-family: 'DM Serif Display', serif; font-size: 26px; font-weight: 400; margin-bottom: 0.75rem; }
+  #success-view p { font-size: 15px; color: var(--texto-suave); line-height: 1.6; margin-bottom: 2.5rem; }
+  .resumen-card { background: var(--blanco); border: 1px solid var(--borde); border-radius: 16px; padding: 1.25rem 1.5rem; width: 100%; margin-bottom: 2rem; text-align: left; }
+  .resumen-row { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; font-size: 14px; }
+  .resumen-row:not(:last-child) { border-bottom: 1px solid var(--borde); }
+  .resumen-row span:first-child { color: var(--texto-suave); }
+  .resumen-row span:last-child { font-weight: 500; }
+  .btn-nueva { background: transparent; border: 1px solid var(--borde); border-radius: 14px; padding: 14px 32px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500; color: var(--texto); cursor: pointer; }
+  .btn-nueva:active { background: var(--verde-claro); }
+  .footer { padding: 1rem 1.75rem; text-align: center; font-size: 11px; color: #b0aea8; letter-spacing: 0.02em; }
+</style>
+</head>
+<body>
+
+<div id="form-view">
+  <div class="app">
+    <header>
+      <p class="org">Ronda Cultural</p>
+      <h1>Registro de visita</h1>
+      <span class="fecha-badge" id="fecha-badge">—</span>
+    </header>
+    <div class="body">
+      <div class="display-wrap">
+        <p class="display-label">Número de asistentes</p>
+        <div class="display-number empty" id="display">—</div>
+        <p class="display-sub" id="display-sub">Introduce el total de personas</p>
+      </div>
+      <div class="keypad">
+        <button class="key" data-v="1">1</button>
+        <button class="key" data-v="2">2</button>
+        <button class="key" data-v="3">3</button>
+        <button class="key" data-v="4">4</button>
+        <button class="key" data-v="5">5</button>
+        <button class="key" data-v="6">6</button>
+        <button class="key" data-v="7">7</button>
+        <button class="key" data-v="8">8</button>
+        <button class="key" data-v="9">9</button>
+        <button class="key empty"></button>
+        <button class="key" data-v="0">0</button>
+        <button class="key del" data-v="del">⌫</button>
+      </div>
+      <button class="btn-enviar" id="btn-enviar" disabled>
+        <span class="btn-text">Enviar registro</span>
+        <span class="spinner"></span>
+      </button>
+    </div>
+    <div class="footer">Ronda Cultural · Visitas guiadas</div>
+  </div>
+</div>
+
+<div id="success-view">
+  <div class="check-circle">
+    <svg viewBox="0 0 36 36" fill="none"><path d="M7 18l8 8 14-14" stroke="#1a6b4a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+  <h2>¡Registro enviado!</h2>
+  <p>Los datos han llegado a la coordinación correctamente.</p>
+  <div class="resumen-card">
+    <div class="resumen-row"><span>Fecha</span><span id="res-fecha">—</span></div>
+    <div class="resumen-row"><span>Hora</span><span id="res-hora">—</span></div>
+    <div class="resumen-row"><span>Asistentes</span><span id="res-num">—</span></div>
+  </div>
+  <button class="btn-nueva" id="btn-nueva">Registrar otra visita</button>
+</div>
+
+<!-- Formulario oculto que envía a Google Forms sin redirigir la página -->
+<iframe name="hidden-form" style="display:none;"></iframe>
+<form id="gform"
+  action="https://docs.google.com/forms/d/e/1FAIpQLSeM6svMVBtn3YUl0UqYM1DJCnnuWVK_sd8xlUpCSwLFAM5VFQ/formResponse"
+  method="POST"
+  target="hidden-form"
+  style="display:none;">
+  <input type="hidden" name="entry.980838430" id="campo-asistentes" value="">
+</form>
+
+<script>
+  let valor = '';
+  const display = document.getElementById('display');
+  const displaySub = document.getElementById('display-sub');
+  const btnEnviar = document.getElementById('btn-enviar');
+  const now = new Date();
+
+  document.getElementById('fecha-badge').textContent = now.toLocaleDateString('es-ES', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+  });
+
+  document.querySelector('.keypad').addEventListener('click', e => {
+    const key = e.target.closest('[data-v]');
+    if (!key) return;
+    const v = key.dataset.v;
+    if (v === 'del') {
+      valor = valor.slice(0, -1);
+    } else {
+      if (valor.length >= 3) return;
+      valor += v;
+    }
+    if (valor) {
+      display.textContent = valor;
+      display.classList.remove('empty');
+      displaySub.textContent = parseInt(valor) === 1 ? '1 persona' : `${valor} personas`;
+    } else {
+      display.textContent = '—';
+      display.classList.add('empty');
+      displaySub.textContent = 'Introduce el total de personas';
+    }
+    display.classList.remove('pulse');
+    void display.offsetWidth;
+    display.classList.add('pulse');
+    setTimeout(() => display.classList.remove('pulse'), 100);
+    btnEnviar.disabled = valor === '' || valor === '0';
+  });
+
+  btnEnviar.addEventListener('click', () => {
+    const n = parseInt(valor);
+    const fecha = now.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const hora = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+    document.getElementById('campo-asistentes').value = valor;
+    document.getElementById('gform').submit();
+
+    btnEnviar.classList.add('loading');
+    btnEnviar.disabled = true;
+
+    setTimeout(() => {
+      document.getElementById('res-fecha').textContent = fecha;
+      document.getElementById('res-hora').textContent = hora;
+      document.getElementById('res-num').textContent = `${valor} persona${n !== 1 ? 's' : ''}`;
+      document.getElementById('form-view').style.display = 'none';
+      document.getElementById('success-view').classList.add('visible');
+    }, 800);
+  });
+
+  document.getElementById('btn-nueva').addEventListener('click', () => {
+    valor = '';
+    display.textContent = '—';
+    display.classList.add('empty');
+    displaySub.textContent = 'Introduce el total de personas';
+    btnEnviar.disabled = true;
+    btnEnviar.classList.remove('loading');
+    document.getElementById('form-view').style.display = 'block';
+    document.getElementById('success-view').classList.remove('visible');
+  });
+</script>
+</body>
+</html>
