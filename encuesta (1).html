@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ronda Cultural · ¿Cómo fue tu visita?</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --verde: #1a6b4a;
+    --verde-claro: #e8f5ee;
+    --crema: #faf8f3;
+    --texto: #1c1c1a;
+    --texto-suave: #7a7a72;
+    --borde: #e0ddd5;
+    --blanco: #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { min-height: 100%; background: var(--crema); font-family: 'DM Sans', sans-serif; color: var(--texto); overscroll-behavior: none; }
+
+  .app { min-height: 100dvh; display: flex; flex-direction: column; max-width: 420px; margin: 0 auto; }
+
+  header { padding: 2rem 1.75rem 1.5rem; background: var(--blanco); border-bottom: 1px solid var(--borde); text-align: center; }
+  .org { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--texto-suave); margin-bottom: 6px; }
+  header h1 { font-family: 'DM Serif Display', serif; font-size: 24px; font-weight: 400; line-height: 1.25; margin-bottom: 6px; }
+  header p { font-size: 14px; color: var(--texto-suave); }
+
+  .body { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 2rem 1.75rem; gap: 1.75rem; }
+
+  /* CÍRCULO DISPLAY */
+  .seleccion-display {
+    width: 110px; height: 110px; border-radius: 50%;
+    border: 2px solid var(--borde); background: var(--blanco);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .seleccion-display.activo { border-color: var(--verde); background: var(--verde-claro); }
+  .seleccion-numero { font-family: 'DM Serif Display', serif; font-size: 52px; line-height: 1; color: var(--texto); transition: color 0.2s; }
+  .seleccion-display.activo .seleccion-numero { color: var(--verde); }
+  .seleccion-label { font-size: 11px; color: var(--texto-suave); margin-top: 2px; letter-spacing: 0.05em; text-transform: uppercase; }
+
+  /* GRID */
+  .grid-wrap { width: 100%; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .num-btn {
+    aspect-ratio: 1; border-radius: 12px; border: 1px solid var(--borde);
+    background: var(--blanco); font-family: 'DM Sans', sans-serif;
+    font-size: 20px; font-weight: 400; color: var(--texto); cursor: pointer;
+    transition: background 0.12s, border-color 0.12s, transform 0.08s, color 0.12s;
+    user-select: none; -webkit-user-select: none;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .num-btn:active { transform: scale(0.93); }
+  .num-btn.seleccionado { background: var(--verde); border-color: var(--verde); color: var(--blanco); font-weight: 500; }
+
+  /* ETIQUETAS — fuera del grid, correctamente alineadas */
+  .etiquetas {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 2px;
+  }
+  .etiquetas span { font-size: 11px; color: var(--texto-suave); }
+
+  /* BOTÓN */
+  .btn-enviar {
+    width: 100%; padding: 17px; background: var(--verde); border: none;
+    border-radius: 14px; color: var(--blanco); font-family: 'DM Sans', sans-serif;
+    font-size: 16px; font-weight: 500; cursor: pointer;
+    transition: background 0.15s, transform 0.08s;
+  }
+  .btn-enviar:not(:disabled):active { background: #124d35; transform: scale(0.98); }
+  .btn-enviar:disabled { background: #d0cec8; color: #a09e98; cursor: default; }
+  .btn-enviar .spinner { display: none; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto; }
+  .btn-enviar.loading .btn-text { display: none; }
+  .btn-enviar.loading .spinner { display: block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ÉXITO */
+  #success-view { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 100dvh; padding: 2.5rem 2rem; text-align: center; background: var(--crema); max-width: 420px; margin: 0 auto; }
+  #success-view.visible { display: flex; }
+
+  .icono-grande { width: 72px; height: 72px; margin: 0 auto 1.5rem; animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes pop { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  .puntuacion-grande { width: 120px; height: 120px; border-radius: 50%; background: var(--verde-claro); border: 2px solid #b8ddc9; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 1.75rem; }
+  .puntuacion-grande .num { font-family: 'DM Serif Display', serif; font-size: 52px; color: var(--verde); line-height: 1; }
+  .puntuacion-grande .den { font-size: 12px; color: var(--verde); opacity: 0.7; }
+
+  #success-view h2 { font-family: 'DM Serif Display', serif; font-size: 26px; font-weight: 400; margin-bottom: 0.75rem; }
+  #success-view p { font-size: 15px; color: var(--texto-suave); line-height: 1.6; }
+
+  .footer { padding: 1rem 1.75rem; text-align: center; font-size: 11px; color: #b0aea8; letter-spacing: 0.02em; }
+</style>
+</head>
+<body>
+
+<div id="form-view">
+  <div class="app">
+    <header>
+      <p class="org">Ronda Cultural</p>
+      <h1>¿Cómo fue tu visita?</h1>
+      <p>Tu opinión nos ayuda a mejorar</p>
+    </header>
+
+    <div class="body">
+      <div class="seleccion-display" id="seleccion-display">
+        <span class="seleccion-numero" id="seleccion-numero">—</span>
+        <span class="seleccion-label">/ 10</span>
+      </div>
+
+      <div class="grid-wrap">
+        <div class="grid" id="grid">
+          <button class="num-btn" data-v="1">1</button>
+          <button class="num-btn" data-v="2">2</button>
+          <button class="num-btn" data-v="3">3</button>
+          <button class="num-btn" data-v="4">4</button>
+          <button class="num-btn" data-v="5">5</button>
+          <button class="num-btn" data-v="6">6</button>
+          <button class="num-btn" data-v="7">7</button>
+          <button class="num-btn" data-v="8">8</button>
+          <button class="num-btn" data-v="9">9</button>
+          <button class="num-btn" data-v="10">10</button>
+        </div>
+        <div class="etiquetas">
+          <span>Muy malo</span>
+          <span>Excelente</span>
+        </div>
+      </div>
+
+      <button class="btn-enviar" id="btn-enviar" disabled>
+        <span class="btn-text">Enviar valoración</span>
+        <span class="spinner"></span>
+      </button>
+    </div>
+
+    <div class="footer">Ronda Cultural · Visitas guiadas</div>
+  </div>
+</div>
+
+<!-- PANTALLA ÉXITO -->
+<div id="success-view">
+  <!-- Icono SVG según puntuación -->
+  <div id="icono-grande" class="icono-grande"></div>
+
+  <div class="puntuacion-grande">
+    <span class="num" id="res-num">—</span>
+    <span class="den">/ 10</span>
+  </div>
+  <h2 id="res-mensaje">¡Gracias!</h2>
+  <p>Tu valoración ha sido enviada.<br>Nos ayuda mucho a seguir mejorando.</p>
+</div>
+
+<iframe name="hidden-form" style="display:none;"></iframe>
+<form id="gform"
+  action="https://docs.google.com/forms/d/e/1FAIpQLSfR_iUq8w-tj7S78sxDJsmY7JksiCSgUZcKFR1XUmS6zvc-fw/formResponse"
+  method="POST" target="hidden-form" style="display:none;">
+  <input type="hidden" name="entry.872999935" id="campo-nota" value="">
+</form>
+
+<script>
+  let valorSeleccionado = null;
+
+  const mensajes = {
+    1: 'Gracias por tu honestidad',
+    2: 'Gracias por tu honestidad',
+    3: 'Gracias, tomaremos nota',
+    4: 'Gracias, tomaremos nota',
+    5: 'Gracias por tu valoración',
+    6: 'Gracias por tu valoración',
+    7: 'Nos alegra que te gustara',
+    8: 'Nos alegra que te gustara',
+    9: 'Qué bien, muchas gracias',
+    10: 'Nos hace muy felices'
+  };
+
+  // Iconos SVG según puntuación (triste / neutral / feliz / muy feliz)
+  function getIcono(v) {
+    if (v <= 2) return `<svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="36" cy="36" r="34" fill="#fdf0ee" stroke="#f0997b" stroke-width="2"/>
+      <circle cx="26" cy="30" r="3" fill="#D85A30"/>
+      <circle cx="46" cy="30" r="3" fill="#D85A30"/>
+      <path d="M24 48c3-5 21-5 24 0" stroke="#D85A30" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>`;
+    if (v <= 4) return `<svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="36" cy="36" r="34" fill="#faeeda" stroke="#EF9F27" stroke-width="2"/>
+      <circle cx="26" cy="30" r="3" fill="#BA7517"/>
+      <circle cx="46" cy="30" r="3" fill="#BA7517"/>
+      <path d="M24 46h24" stroke="#BA7517" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>`;
+    if (v <= 7) return `<svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="36" cy="36" r="34" fill="#e8f5ee" stroke="#2d9e6b" stroke-width="2"/>
+      <circle cx="26" cy="30" r="3" fill="#1a6b4a"/>
+      <circle cx="46" cy="30" r="3" fill="#1a6b4a"/>
+      <path d="M24 44c3 4 21 4 24 0" stroke="#1a6b4a" stroke-width="2.5" stroke-linecap="round"/>
+    </svg>`;
+    return `<svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="36" cy="36" r="34" fill="#e8f5ee" stroke="#1a6b4a" stroke-width="2"/>
+      <circle cx="26" cy="29" r="3.5" fill="#1a6b4a"/>
+      <circle cx="46" cy="29" r="3.5" fill="#1a6b4a"/>
+      <path d="M22 43c4 7 24 7 28 0" stroke="#1a6b4a" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M30 22l-3-4M42 22l3-4" stroke="#1a6b4a" stroke-width="2" stroke-linecap="round"/>
+    </svg>`;
+  }
+
+  document.getElementById('grid').addEventListener('click', e => {
+    const btn = e.target.closest('.num-btn');
+    if (!btn) return;
+    const v = parseInt(btn.dataset.v);
+    document.querySelectorAll('.num-btn').forEach(b => b.classList.remove('seleccionado'));
+    btn.classList.add('seleccionado');
+    valorSeleccionado = v;
+    document.getElementById('seleccion-numero').textContent = v;
+    document.getElementById('seleccion-display').classList.add('activo');
+    document.getElementById('btn-enviar').disabled = false;
+  });
+
+  document.getElementById('btn-enviar').addEventListener('click', () => {
+    if (!valorSeleccionado) return;
+    document.getElementById('campo-nota').value = valorSeleccionado;
+    document.getElementById('gform').submit();
+    const btn = document.getElementById('btn-enviar');
+    btn.classList.add('loading');
+    btn.disabled = true;
+    setTimeout(() => {
+      document.getElementById('res-num').textContent = valorSeleccionado;
+      document.getElementById('res-mensaje').textContent = mensajes[valorSeleccionado];
+      document.getElementById('icono-grande').innerHTML = getIcono(valorSeleccionado);
+      document.getElementById('form-view').style.display = 'none';
+      document.getElementById('success-view').classList.add('visible');
+    }, 800);
+  });
+</script>
+</body>
+</html>
